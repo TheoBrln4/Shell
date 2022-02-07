@@ -7,6 +7,8 @@
 #include <time.h>
 #include <fcntl.h>
 
+// Création d'une interface système sur un système d'exploitation Linux (appels systèmes utilisant le noyau Linux)
+
 int main(){
 		write(1,"Bienvenue dans le shell ENSEA\nPour quitter, tapez 'exit'\n",61);
 		while(1){ 
@@ -22,14 +24,14 @@ int main(){
 			int j = 0;
 			int a = 0;
 			
-			cmds[k] = strtok(cmd, " "); 
+			cmds[k] = strtok(cmd, " "); // Récupération de la commande
 			while(cmds[k] != NULL){
 				k++;
 				cmds[k] = strtok(NULL, " ");	
 			}	
 			cmd[re-1] = '\0';
 
-			if(strstr(cmd, ">") != NULL){
+			if(strstr(cmd, ">") != NULL){ // Si on tape cela, on crée un fichier 
 				while(a == 0){
 					if(strcmp(cmds[j], ">") == 0){
 						a = j+1;
@@ -42,7 +44,7 @@ int main(){
 				dup2(1, createdFile);
 			}	
 			
-			if(strcmp(cmds[0], "exit") == 0){ 
+			if(strcmp(cmds[0], "exit") == 0){ // Si on tape exit, on sort de l'interface
 				write(1, "Au revoir\n", 11);
 				break;
 			}
@@ -53,10 +55,10 @@ int main(){
 				clock_gettime(CLOCK_REALTIME, &stop);
 				double tfin = (double) stop.tv_nsec;
 				double tdeb = (double) start.tv_nsec;
-				temps = (tfin-tdeb)/1000000;
+				temps = (tfin-tdeb)/1000000; // Durée de l'exécution de la commande
 				char msg[50];
 				if(WIFEXITED(status)){
-					sprintf(msg, "enseash[exit:%d | %f ms]\n", WEXITSTATUS(status), temps);
+					sprintf(msg, "enseash[exit:%d | %f ms]\n", WEXITSTATUS(status), temps); // Si le processus s'arrête normalement, on renvoie le statut
 					int i = 1;
 					while(msg[i-1] != '\n'){
 						i++;
@@ -64,7 +66,7 @@ int main(){
 					write(1, msg, i);
 				}
 				else if(WIFSIGNALED(status)){
-					sprintf(msg, "enseash[sign:%d | %f ms]", WTERMSIG(status), temps);
+					sprintf(msg, "enseash[sign:%d | %f ms]", WTERMSIG(status), temps); // Si le processus s'arrête à cause d'un signal, on renvoie le numéro du signal
 					int i=1;
 					while(msg[i-1]!='\n'){
 						i++;
@@ -73,7 +75,7 @@ int main(){
 				}
 			}
 			else{ 
-				execvp(cmds[0], cmds);
+				execvp(cmds[0], cmds); // Exécution de la commande
 			}
 		}
 		return 0;
