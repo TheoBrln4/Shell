@@ -1,0 +1,80 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <sys/types.h>
+#include <time.h>
+#include <fcntl.h>
+
+int main(){
+		write(1,"Bienvenue dans le shell ENSEA\nPour quitter, tapez 'exit'\n",61);
+		while(1){ 
+			write(1, "enseash %", 9);
+			struct timespec start, stop;
+			double temps;
+			pid_t pid;
+			int status;
+			char cmd[50];
+			char* cmds[10];
+			int re = read(0, cmd, 50);
+			int k = 0;
+			int j = 0;
+			int a = 0;
+			
+			cmds[k] = strtok(cmd, " "); 
+			while(cmds[k] != NULL){
+				k++;
+				cmds[k] = strtok(NULL, " ");	
+			}	
+			cmd[re-1] = '\0';
+
+			if(strstr(cmd, ">") != NULL){
+				while(a == 0){
+					if(strcmp(cmds[j], ">") == 0){
+						a = j+1;
+					}
+					else{
+						j += 1;
+					}
+				}
+				int createdFile = creat(cmds[a], O_RDWR);
+				dup2(1, createdFile);
+			}	
+			
+			if(strcmp(cmds[0], "exit") == 0){ 
+				write(1, "Au revoir\n", 11);
+				break;
+			}
+			pid = fork(); 
+			if(pid > 0){ 
+				clock_gettime(CLOCK_REALTIME, &start);
+				wait(&status);
+				clock_gettime(CLOCK_REALTIME, &stop);
+				double tfin = (double) stop.tv_nsec;
+				double tdeb = (double) start.tv_nsec;
+				temps = (tfin-tdeb)/1000000;
+				char msg[50];
+				if(WIFEXITED(status)){
+					sprintf(msg, "enseash[exit:%d | %f ms]\n", WEXITSTATUS(status), temps);
+					int i = 1;
+					while(msg[i-1] != '\n'){
+						i++;
+					}
+					write(1, msg, i);
+				}
+				else if(WIFSIGNALED(status)){
+					sprintf(msg, "enseash[sign:%d | %f ms]", WTERMSIG(status), temps);
+					int i=1;
+					while(msg[i-1]!='\n'){
+						i++;
+					}
+					write(1,msg,i);
+				}
+			}
+			else{ 
+				execvp(cmds[0], cmds);
+			}
+		}
+		return 0;
+}
